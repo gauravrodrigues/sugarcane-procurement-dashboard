@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sugarcane Equipment Procurement — Lead Tracker</title>
+  <style>
+    :root {
+      --green: #16a34a;
+      --green-light: #dcfce7;
+      --green-dark: #14532d;
+      --amber: #d97706;
+      --amber-light: #fef3c7;
+      --blue: #2563eb;
+      --blue-light: #dbeafe;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-400: #9ca3af;
+      --gray-600: #4b5563;
+      --gray-800: #1f2937;
+      --gray-900: #111827;
+      --white: #ffffff;
+      --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+      --radius: 10px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--gray-50); color: var(--gray-800); line-height: 1.5; }
+    header { background: linear-gradient(135deg, #14532d 0%, #16a34a 100%); color: white; padding: 36px 40px 30px; }
+    header .badge { display: inline-block; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.35); border-radius: 20px; padding: 3px 12px; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; }
+    header h1 { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+    header p  { font-size: 14px; opacity: 0.85; }
+    header .meta { margin-top: 16px; display: flex; gap: 24px; flex-wrap: wrap; }
+    header .meta span { font-size: 13px; opacity: 0.8; display: flex; align-items: center; gap: 5px; }
+    header .meta strong { opacity: 1; }
+    main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 60px; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; margin-bottom: 36px; }
+    .stat-card { background: var(--white); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); border-top: 3px solid var(--green); }
+    .stat-card.amber { border-top-color: var(--amber); }
+    .stat-card.blue  { border-top-color: var(--blue); }
+    .stat-card .num  { font-size: 32px; font-weight: 700; color: var(--gray-900); line-height: 1; margin-bottom: 4px; }
+    .stat-card .lbl  { font-size: 12px; color: var(--gray-600); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-card .sub  { font-size: 11px; color: var(--gray-400); margin-top: 4px; }
+    .section-title { font-size: 15px; font-weight: 700; color: var(--gray-800); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--gray-200); }
+    .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+    .filter-bar input { flex: 1; min-width: 200px; padding: 8px 14px; border: 1px solid var(--gray-200); border-radius: 8px; font-size: 13px; background: white; outline: none; }
+    .filter-btn { padding: 7px 14px; border-radius: 8px; border: 1px solid var(--gray-200); background: white; font-size: 12px; font-weight: 600; cursor: pointer; color: var(--gray-600); }
+    .filter-btn.active { background: var(--green); color: white; border-color: var(--green); }
+    .table-wrap { background: white; border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 36px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th { background: var(--gray-50); padding: 11px 16px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gray-600); border-bottom: 1px solid var(--gray-200); }
+    tbody tr { border-bottom: 1px solid var(--gray-100); }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--gray-50); }
+    tbody td { padding: 12px 16px; vertical-align: middle; }
+    .company-name { font-weight: 600; color: var(--gray-900); }
+    .company-sub  { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+    .badge-country { display: inline-block; padding: 2px 9px; border-radius: 12px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .badge-country.india  { background: #fef3c7; color: #92400e; }
+    .badge-country.china  { background: #fee2e2; color: #991b1b; }
+    .badge-country.brazil { background: #d1fae5; color: #065f46; }
+    .badge-tier { display: inline-block; padding: 2px 9px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+    .badge-tier.t1 { background: #14532d; color: white; }
+    .badge-tier.t2 { background: #1d4ed8; color: white; }
+    .badge-tier.t3 { background: var(--gray-200); color: var(--gray-600); }
+    .badge-status { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+    .badge-status.sent     { background: var(--green-light); color: var(--green-dark); }
+    .badge-status.no-email { background: var(--gray-100); color: var(--gray-600); }
+    .dot { width: 6px; height: 6px; border-radius: 50%; }
+    .dot.green { background: var(--green); }
+    .dot.gray  { background: var(--gray-400); }
+    .email-link { color: var(--green); text-decoration: none; font-size: 12px; }
+    .no-email-text { color: var(--gray-400); font-size: 12px; font-style: italic; }
+    .region-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 36px; }
+    .region-card { background: white; border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    .region-card-header { padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; }
+    .region-card-header.india  { background: #fef3c7; }
+    .region-card-header.china  { background: #fee2e2; }
+    .region-card-header.brazil { background: #d1fae5; }
+    .region-card-header h3 { font-size: 14px; font-weight: 700; }
+    .region-card-header .count { font-size: 20px; font-weight: 800; opacity: 0.7; }
+    .region-card-body { padding: 12px 18px; }
+    .region-company { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--gray-100); font-size: 13px; }
+    .region-company:last-child { border-bottom: none; }
+    .region-company .name { font-weight: 500; }
+    .region-company .focus { font-size: 11px; color: var(--gray-400); }
+    .tier-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 36px; }
+    .tier-card { background: white; border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; }
+    .tier-card h3 { font-size: 13px; font-weight: 700; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--gray-100); display: flex; align-items: center; gap: 8px; }
+    .tier-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--gray-100); }
+    .tier-item:last-child { border-bottom: none; }
+    .tier-item .ti-name { font-size: 13px; font-weight: 600; }
+    .tier-item .ti-sub  { font-size: 11px; color: var(--gray-400); margin-top: 1px; }
+    .tier-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+    .tier-dot.t1 { background: #16a34a; }
+    .tier-dot.t2 { background: #2563eb; }
+    .tier-dot.t3 { background: #9ca3af; }
+    .auto-box { background: linear-gradient(135deg, #14532d 0%, #166534 100%); border-radius: var(--radius); padding: 24px 28px; color: white; margin-bottom: 36px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+    .auto-box-icon { width: 52px; height: 52px; background: rgba(255,255,255,0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+    .auto-box-content { flex: 1; min-width: 200px; }
+    .auto-box-content h3 { font-size: 16px; font-weight: 700; margin-bottom: 5px; }
+    .auto-box-content p  { font-size: 13px; opacity: 0.85; }
+    .auto-box-stats { display: flex; gap: 24px; flex-wrap: wrap; }
+    .auto-stat { text-align: center; }
+    .auto-stat .n { font-size: 26px; font-weight: 800; }
+    .auto-stat .l { font-size: 11px; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.05em; }
+    .pipeline { background: white; border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px 24px; margin-bottom: 36px; }
+    .pipeline-steps { display: flex; align-items: center; flex-wrap: wrap; margin-top: 16px; }
+    .pipeline-step { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 140px; }
+    .pipeline-step .p-num { width: 32px; height: 32px; border-radius: 50%; background: var(--green); color: white; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .pipeline-step .p-label { font-size: 12px; font-weight: 600; }
+    .pipeline-step .p-sub   { font-size: 11px; color: var(--gray-400); }
+    .pipeline-arrow { font-size: 18px; color: var(--gray-300); padding: 0 4px; flex-shrink: 0; }
+    footer { text-align: center; padding: 20px; font-size: 12px; color: var(--gray-400); border-top: 1px solid var(--gray-200); }
+    @media (max-width: 600px) { header { padding: 24px 20px 20px; } main { padding: 20px 16px 40px; } header h1 { font-size: 20px; } .pipeline-arrow { display: none; } }
+  </style>
+</head>
+<body>
+<header>
+  <div class="badge">Procurement Intelligence</div>
+  <h1>Sugarcane Equipment &amp; Automation</h1>
+  <p>Lead Tracking Dashboard &mdash; Buyer: Gaurav Rodrigues</p>
+  <div class="meta">
+    <span><strong>20</strong>&nbsp;companies emailed</span>
+    <span><strong>3</strong>&nbsp;regions covered</span>
+    <span><strong>9</strong>&nbsp;equipment categories</span>
+    <span>Last updated: March 2026</span>
+  </div>
+</header>
+<main>
+  <div class="stats">
+    <div class="stat-card"><div class="num">20</div><div class="lbl">Emails Sent</div><div class="sub">Across 3 regions</div></div>
+    <div class="stat-card"><div class="num">16</div><div class="lbl">Manufacturers Found</div><div class="sub">This research cycle</div></div>
+    <div class="stat-card amber"><div class="num">11</div><div class="lbl">Direct Emails</div><div class="sub">5 via web form only</div></div>
+    <div class="stat-card blue"><div class="num">3</div><div class="lbl">Tier 1 Targets</div><div class="sub">Full turnkey suppliers</div></div>
+    <div class="stat-card"><div class="num">Daily</div><div class="lbl">Auto-Outreach</div><div class="sub">Runs every 9:00 AM</div></div>
+  </div>
+  <div class="auto-box">
+    <div class="auto-box-icon">&#9881;</div>
+    <div class="auto-box-content"><h3>Automated Lead Hunter is Active</h3><p>Scrapes global directories daily, verifies emails, and sends personalised buyer inquiries. Deduplication ensures no company is emailed twice.</p></div>
+    <div class="auto-box-stats">
+      <div class="auto-stat"><div class="n">9</div><div class="l">Categories</div></div>
+      <div class="auto-stat"><div class="n">8</div><div class="l">Regions</div></div>
+      <div class="auto-stat"><div class="n">Daily</div><div class="l">Schedule</div></div>
+    </div>
+  </div>
+  <div class="pipeline">
+    <div class="section-title">Outreach Pipeline</div>
+    <div class="pipeline-steps">
+      <div class="pipeline-step"><div class="p-num">1</div><div><div class="p-label">Research</div><div class="p-sub">Web + directory scrape</div></div></div>
+      <div class="pipeline-arrow">&#8594;</div>
+      <div class="pipeline-step"><div class="p-num">2</div><div><div class="p-label">Qualify</div><div class="p-sub">Verify product fit</div></div></div>
+      <div class="pipeline-arrow">&#8594;</div>
+      <div class="pipeline-step"><div class="p-num">3</div><div><div class="p-label">Verify Email</div><div class="p-sub">Confirm contact info</div></div></div>
+      <div class="pipeline-arrow">&#8594;</div>
+      <div class="pipeline-step"><div class="p-num">4</div><div><div class="p-label">Compose</div><div class="p-sub">Personalised inquiry</div></div></div>
+      <div class="pipeline-arrow">&#8594;</div>
+      <div class="pipeline-step"><div class="p-num">5</div><div><div class="p-label">Send &amp; Log</div><div class="p-sub">Gmail + memory store</div></div></div>
+      <div class="pipeline-arrow">&#8594;</div>
+      <div class="pipeline-step"><div class="p-num">6</div><div><div class="p-label">Await Reply</div><div class="p-sub">Catalogue / demo call</div></div></div>
+    </div>
+  </div>
+  <div class="filter-bar">
+    <input type="text" id="searchInput" placeholder="Search company, country, or focus area..." oninput="filterTable()" />
+    <button class="filter-btn active" onclick="filterCountry('all', this)">All</button>
+    <button class="filter-btn" onclick="filterCountry('India', this)">India</button>
+    <button class="filter-btn" onclick="filterCountry('China', this)">China</button>
+    <button class="filter-btn" onclick="filterCountry('Brazil', this)">Brazil</button>
+  </div>
+  <div class="section-title">All Leads</div>
+  <div class="table-wrap">
+    <table id="leadTable">
+      <thead><tr><th>#</th><th>Company</th><th>Country</th><th>Equipment Focus</th><th>Contact Email</th><th>Tier</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr data-country="India"><td>1</td><td><div class="company-name">ISGEC Heavy Engineering</div><div class="company-sub">Noida, UP &mdash; est. 1933</div></td><td><span class="badge-country india">India</span></td><td>Full Turnkey Plants</td><td><a class="email-link" href="mailto:xydsales@isgec.co.in">xydsales@isgec.co.in</a></td><td><span class="badge-tier t1">Tier 1</span></td><td><span class="badge-status sent"><span class="dot green"></span>Emailed</span></td></tr>
+        <tr data-country="India"><td>2</td><td><div class="company-name">Shrijee Group</div><div class="company-sub">Mumbai, MH &mdash; est. 1976</div></td><td><span class="badge-country india">India</span></td><td>Full Turnkey Plants</td><td><a class="email-link" href="mailto:sales@shrijee.com">sales@shrijee.com</a></td><td><span class="badge-tier t1">Tier 1</span></td><td><span class="badge-status sent"><span class="dot green"></span>Emailed</span></td></tr>
+        <tr data-country="India"><td>3</td><td><div class="company-name">Walchandnagar Industries</div><div class="company-sub">Pune, MH &mdash; est. 1908</div></td><td><span class="badge-country india">India</span></td><td>Centrifuges + Process House</td><td><a class="email-link" href="mailto:vpshukla@walchand.com">vpshukla@walchand.com</a></td><td><span class="badge-tier t2">Tier 2</span></td><td><span class="badge-status sent"><span class="dot green"></span>Emailed</span></td></tr>
+        <tr data-country="India"><td>4</td><td><div class="company-name">Fives Cail-KCP</div><div class="company-sub">Chennai, TN &mdash; French JV</div></td><td><span class="badge-country india">India</span></td><td>Centrifuges + Evaporation</td><td><a class="email-link" href="mailto:sales@fivescail-kcp.com">sales@fivescail-kcp.com</a></td><td><span class="badge-tier t2">Tier 2</span></td><td><span class="badge-status sent"><span class="dot green"></span>Emailed</span></td></tr>
+        <tr data-country="India"><td>5</td><td><div class="company-name">Multitech Engineers</div><div class="company-sub">Delhi / NCR</div></td><td><span class="badge-country india">India</span></td><td>Juice Clarification</td><td><a class="email-link" href="mailto:multitechdel@gmail.com">multitechdel@gmail.com</a></td><td><span class="badge-tier t3">Tier 3</span></td><td><span class="badge-status sent"><span class="dot green"></span>Emailed</span></td></tr>
+        <tr data-country="India"><td>6</td><td><div class="company-name">MahaShakti Engineering</div><div class="company-sub">India &mdash; est. 1980</div></td><td><span class="badge-country india">India</span></td><td>Mills + Rollers + Shredders</td><td><span class="no-email-text">Website form only</span></td><td><span class="badge-tier t3">Tier 3</span></td><td><span class="badge-status no-email"><span class="dot gray"></span>No Direct Email</span></td></tr>
+        <tr data-country="China"><td>7</td><td><div class="company-name">GX Nanning Zhonggao</div><div class="company-sub">Nanning, Guangxi</div></td><td><span class="badge-country china">China</span></td><td>Extraction + Pressing Lines</td><td><a class="email-link" href="mailto:nnzhonggaotangji@sina.com">nnzhonggaotangji@sina.com</a></td><td><span class="badge-tier t2">Tier 2</span></td><td><span class="badge-status sent"><span class="dot green"></span>Emailed</span></td></tr>
+        <tr data-country="China"><td>8</td><td><div class="company-name">Guangxi Su Group</div><div class="company-sub">Nanning, Guangxi &mdash; 30+ yrs</div></td><td><span class="badge-country china">China</span></td><td>Centrifuges (6,000+ installed)</td><td><a class="email-link" href="mailto:info@sugroup.cn">info@sugroup.cn</a></td><td><span class="badge-tier t2">Tier 2</span></td><td><span class="badge-status sent"><span class="dot green"></span>Emailed</span></td></tr>
+        <tr data-country="China"><td>9</td><td><div class="company-name">Luoyang Yujie</div><div class="company-sub">Luoyang, Henan &mdash; 20+ yrs</div></td><td><span class="badge-country china">China</span></td><td>Mills + Spare Parts</td><td><a class="email-link" href="mailto:sales@yujieindustry.com">sales@yujieindustry.com</a></td><td><span class="badge-tier t3">Tier 3</span></td><td><span class="badge-status sent"><span class="dot green"></span>Emailed</span></td></tr>
+        <tr data-country="China"><td>10</td><td><div class="company-name">Jiangsu Hanpu</div><div class="company-sub">Jiangsu &mdash; 70 yrs experience</div></td><td><span class="badge-country china">China</span></td><td>MVR Evaporation + Crystallization</td><td><span class="no-email-text">Website form only</span></td><td><span class="badge-tier t3">Tier 3</span></td><td><span class="badge-status no-email"><span class="dot gray"></span>No Direct Email</span></td></tr>
+        <tr data-country="China"><td>11</td><td><div class="company-name">JingGong Machinery</div><div class="company-sub">Quanzhou, Fujian &mdash; est. 1997</div></td><td><span class="badge-country china">China</span></td><td>Harvesters + Grab Loaders</td><td><a class="email-link" href="mailto:sales@jgexcavator.com">sales@jgexcavator.com</a></td><td><span class="badge-tier t3">Tier 3</span></td><td><span class="badge-status sent"><span class="dot green"></span>Emailed</span></td></tr>
+        <tr data-country="China"><td>12</td><td><div class="company-name">TAGRM</div><div class="company-sub">Guangxi &amp; Fujian &mdash; ISO9001 + CE</div></td><td><span class="badge-country china">China</span></td><td>Harvesters + Field Prep</td><td><span class="no-email-text">Website form only</span></td><td><span class="badge-tier t3">Tier 3</span></td><td><span class="badge-status no-email"><span class="dot gray"></span>No Direct Email</span></td></tr>
+        <tr data-country="Brazil"><td>13</td><td><div class="company-name">DEDINI S/A</div><div class="company-sub">Piracicaba, SP &mdash; est. 1920</div></td><td><span class="badge-country brazil">Brazil</span></td><td>Full Turnkey (Sugar + Ethanol)</td><td><a class="email-link" href="mailto:comercial2@dedini.com.br">comercial2@dedini.com.br</a></td><td><span class="badge-tier t1">Tier 1</span></td><td><span class="badge-status sent"><span class="dot green"></span>Emailed</span></td></tr>
+        <tr data-country="Brazil"><td>14</td><td><div class="company-name">ZANINI RENK</div><div class="company-sub">Cravinhos, SP &mdash; German JV</div></td><td><span class="badge-country brazil">Brazil</span></td><td>Drivetrain + Gearboxes</td><td><a class="email-link" href="mailto:comercial@zaninirenk.com.br">comercial@zaninirenk.com.br</a></td><td><span class="badge-tier t2">Tier 2</span></td><td><span class="badge-status sent"><span class="dot green"></span>Emailed</span></td></tr>
+        <tr data-country="Brazil"><td>15</td><td><div class="company-name">SIMEX</div><div class="company-sub">Brazil &mdash; Full portfolio supplier</div></td><td><span class="badge-country brazil">Brazil</span></td><td>Extraction + Spare Parts</td><td><span class="no-email-text">Website form only</span></td><td><span class="badge-tier t3">Tier 3</span></td><td><span class="badge-status no-email"><span class="dot gray"></span>No Direct Email</span></td></tr>
+        <tr data-country="Brazil"><td>16</td><td><div class="company-name">RANI PIEROTTI</div><div class="company-sub">Minas Gerais, MG &mdash; est. 1961</div></td><td><span class="badge-country brazil">Brazil</span></td><td>High-Efficiency Mills</td><td><a class="email-link" href="mailto:ranipierotti@ranipierotti.com.br">ranipierotti@ranipierotti.com.br</a></td><td><span class="badge-tier t3">Tier 3</span></td><td><span class="badge-status sent"><span class="dot green"></span>Emailed</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="section-title">By Region</div>
+  <div class="region-grid">
+    <div class="region-card"><div class="region-card-header india"><h3>India</h3><div class="count">6</div></div><div class="region-card-body"><div class="region-company"><div><div class="name">ISGEC Heavy Engineering</div><div class="focus">Full Turnkey</div></div><span class="badge-tier t1">T1</span></div><div class="region-company"><div><div class="name">Shrijee Group</div><div class="focus">Full Turnkey</div></div><span class="badge-tier t1">T1</span></div><div class="region-company"><div><div class="name">Walchandnagar Industries</div><div class="focus">Centrifuges</div></div><span class="badge-tier t2">T2</span></div><div class="region-company"><div><div class="name">Fives Cail-KCP</div><div class="focus">Evaporation</div></div><span class="badge-tier t2">T2</span></div><div class="region-company"><div><div class="name">Multitech Engineers</div><div class="focus">Clarification</div></div><span class="badge-tier t3">T3</span></div><div class="region-company"><div><div class="name">MahaShakti Engineering</div><div class="focus">Mills + Rollers</div></div><span class="badge-tier t3">T3</span></div></div></div>
+    <div class="region-card"><div class="region-card-header china"><h3>China</h3><div class="count">6</div></div><div class="region-card-body"><div class="region-company"><div><div class="name">GX Nanning Zhonggao</div><div class="focus">Pressing Lines</div></div><span class="badge-tier t2">T2</span></div><div class="region-company"><div><div class="name">Guangxi Su Group</div><div class="focus">Centrifuges</div></div><span class="badge-tier t2">T2</span></div><div class="region-company"><div><div class="name">Luoyang Yujie</div><div class="focus">Mills</div></div><span class="badge-tier t3">T3</span></div><div class="region-company"><div><div class="name">Jiangsu Hanpu</div><div class="focus">Evaporation</div></div><span class="badge-tier t3">T3</span></div><div class="region-company"><div><div class="name">JingGong Machinery</div><div class="focus">Harvesters</div></div><span class="badge-tier t3">T3</span></div><div class="region-company"><div><div class="name">TAGRM</div><div class="focus">Field Prep</div></div><span class="badge-tier t3">T3</span></div></div></div>
+    <div class="region-card"><div class="region-card-header brazil"><h3>Brazil</h3><div class="count">4</div></div><div class="region-card-body"><div class="region-company"><div><div class="name">DEDINI S/A</div><div class="focus">Full Turnkey</div></div><span class="badge-tier t1">T1</span></div><div class="region-company"><div><div class="name">ZANINI RENK</div><div class="focus">Gearboxes</div></div><span class="badge-tier t2">T2</span></div><div class="region-company"><div><div class="name">SIMEX</div><div class="focus">Spare Parts</div></div><span class="badge-tier t3">T3</span></div><div class="region-company"><div><div class="name">RANI PIEROTTI</div><div class="focus">Mills</div></div><span class="badge-tier t3">T3</span></div></div></div>
+  </div>
+  <div class="section-title">Outreach Priority Tiers</div>
+  <div class="tier-grid">
+    <div class="tier-card"><h3><span class="badge-tier t1">Tier 1</span> Full Plant Capability</h3><div class="tier-item"><div class="tier-dot t1"></div><div><div class="ti-name">DEDINI S/A (Brazil)</div><div class="ti-sub">Largest single-source supplier globally</div></div></div><div class="tier-item"><div class="tier-dot t1"></div><div><div class="ti-name">ISGEC Heavy Engineering (India)</div><div class="ti-sub">700+ mills across 47 countries</div></div></div><div class="tier-item"><div class="tier-dot t1"></div><div><div class="ti-name">Shrijee Group (India)</div><div class="ti-sub">Direct CEO access, 40+ country exports</div></div></div></div>
+    <div class="tier-card"><h3><span class="badge-tier t2">Tier 2</span> Specialist High-Margin</h3><div class="tier-item"><div class="tier-dot t2"></div><div><div class="ti-name">ZANINI RENK (Brazil)</div><div class="ti-sub">World reference in mill drivetrain</div></div></div><div class="tier-item"><div class="tier-dot t2"></div><div><div class="ti-name">Walchandnagar Industries (India)</div><div class="ti-sub">4,500+ centrifuges, century-old brand</div></div></div><div class="tier-item"><div class="tier-dot t2"></div><div><div class="ti-name">Fives Cail-KCP (India)</div><div class="ti-sub">Premium French technology, India-based</div></div></div><div class="tier-item"><div class="tier-dot t2"></div><div><div class="ti-name">Guangxi Su Group (China)</div><div class="ti-sub">6,000+ centrifuge installations globally</div></div></div><div class="tier-item"><div class="tier-dot t2"></div><div><div class="ti-name">GX Nanning Zhonggao (China)</div><div class="ti-sub">Largest pressing equipment maker in China</div></div></div></div>
+    <div class="tier-card"><h3><span class="badge-tier t3">Tier 3</span> Niche / Tactical</h3><div class="tier-item"><div class="tier-dot t3"></div><div><div class="ti-name">SIMEX + RANI PIEROTTI (Brazil)</div><div class="ti-sub">Modular equipment + high-efficiency mills</div></div></div><div class="tier-item"><div class="tier-dot t3"></div><div><div class="ti-name">Luoyang Yujie + Jiangsu Hanpu (China)</div><div class="ti-sub">Mill spares + energy-efficient evaporation</div></div></div><div class="tier-item"><div class="tier-dot t3"></div><div><div class="ti-name">JingGong + TAGRM (China)</div><div class="ti-sub">Harvesting + field prep machinery</div></div></div><div class="tier-item"><div class="tier-dot t3"></div><div><div class="ti-name">MahaShakti + Multitech (India)</div><div class="ti-sub">Rollers, shredders, clarification</div></div></div></div>
+  </div>
+</main>
+<footer>Sugarcane Equipment Procurement Dashboard &mdash; Gaurav Rodrigues &mdash; Powered by Nebula AI &mdash; March 2026</footer>
+<script>
+  let activeCountry = 'all';
+  function filterTable() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const rows = document.querySelectorAll('#leadTable tbody tr');
+    rows.forEach(row => {
+      const text = row.textContent.toLowerCase();
+      const country = row.getAttribute('data-country');
+      const matchSearch = text.includes(q);
+      const matchCountry = activeCountry === 'all' || country === activeCountry;
+      row.style.display = (matchSearch && matchCountry) ? '' : 'none';
+    });
+  }
+  function filterCountry(country, btn) {
+    activeCountry = country;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filterTable();
+  }
+</script>
+</body>
+</html>
